@@ -47,4 +47,7 @@
     <string name="description">Description</string>
     <string name="price">Price</string>
     <string name="addItem">Add Item</string>
+    <string name="itemID">ID</string>
+    <string name="soldBy">Sold By</string>
+    <string name="tempTextviewText">Login to see items</string>
 </resources>

@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -52,7 +53,6 @@ public class HomeFragment extends Fragment implements RecyclerViewAdapter.ItemCl
         sendListUserRequest();
 
         root = inflater.inflate(R.layout.fragment_home, container, false);
-
 
         // set up the RecyclerView
         recyclerView = root.findViewById(R.id.rvItems);
@@ -100,8 +100,10 @@ public class HomeFragment extends Fragment implements RecyclerViewAdapter.ItemCl
                             call.enqueue(new Callback<ResponseBody>() {
                                 @Override
                                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                    Toast.makeText(getContext(), "You bought " + adapter.getItem(position).getTitle() + "!", Toast.LENGTH_LONG).show();
-                                    adapter.getItem(position).setBought();
+                                    if (response.isSuccessful()) {
+                                        Toast.makeText(getContext(), "You bought " + adapter.getItem(position).getTitle() + "!", Toast.LENGTH_LONG).show();
+                                        adapter.getItem(position).setBought();
+                                    }
                                 }
 
                                 @Override
@@ -127,14 +129,23 @@ public class HomeFragment extends Fragment implements RecyclerViewAdapter.ItemCl
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                System.out.println(response);
                 if (response.isSuccessful()) {
                     try {
+                        TextView tv = getView().findViewById(R.id.tempTextview);
+                        tv.setVisibility(View.INVISIBLE);
                         parseUsers(response.body().string());
                         adapter.notifyDataSetChanged();
                         sendListItemsRequest();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                }
+                else if(response.code() == 401){
+                    TextView tv = getView().findViewById(R.id.tempTextview);
+                    tv.setVisibility(View.VISIBLE);
+                    Snackbar.make(getView().findViewById(R.id.rvItems), "Log in to see items", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
                 }
             }
 

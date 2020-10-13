@@ -42,7 +42,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 
         holder.leftCellText.setText(leftCell);
         holder.rightCellText.setText(rightCell);
-        holder.middleCellText.setText(middleCell);
+        holder.middleCellText.setText("$" + middleCell);
 
     }
 

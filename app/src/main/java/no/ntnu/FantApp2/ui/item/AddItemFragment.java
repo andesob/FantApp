@@ -3,12 +3,14 @@ package no.ntnu.FantApp2.ui.item;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.io.IOException;
 
@@ -43,8 +45,6 @@ public class AddItemFragment extends Fragment {
                         priceEditText.getText().toString());
             }
         });
-
-
         return root;
     }
 
@@ -53,11 +53,11 @@ public class AddItemFragment extends Fragment {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    System.out.println(response.body().string());
-                } catch (IOException e) {
-                    e.printStackTrace();
+                if (response.isSuccessful()) {
+                    Toast.makeText(getActivity(), "Added item with title: " + title, Toast.LENGTH_LONG).show();
+                    Navigation.findNavController(getView()).navigate(R.id.nav_home);
                 }
+
             }
 
             @Override

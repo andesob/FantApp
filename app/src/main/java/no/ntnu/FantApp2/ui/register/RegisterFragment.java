@@ -7,12 +7,15 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NavigationRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.Navigation;
 
 import java.io.IOException;
 
@@ -53,20 +56,20 @@ public class RegisterFragment extends Fragment {
                         lastNameEditText.getText().toString());
             }
         });
-
         return root;
     }
 
-    private void registerNewUser(String email, String uid, String password, String firstName, String lastName){
+    private void registerNewUser(String email, String uid, String password, String firstName, String lastName) {
         Call<ResponseBody> call = RetrofitClientInstance.getSINGLETON().getAPI().createUser(email, uid, password, firstName, lastName);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                try {
-                    System.out.println(response.body().string());
-                } catch (IOException e) {
-                    e.printStackTrace();
+                //System.out.println(response.body().string());
+                if (response.isSuccessful()) {
+                    Toast.makeText(getContext(), "Added user with id: " + uid, Toast.LENGTH_LONG).show();
+                    Navigation.findNavController(getView()).navigate(R.id.nav_home);
                 }
+
             }
 
             @Override
