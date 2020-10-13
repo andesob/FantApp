@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_nav_home_to_nav_register"
             app:destination="@id/nav_register" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_addItem"
+            app:destination="@id/nav_addItem" />
     </fragment>
 
     <fragment
@@ -35,6 +38,16 @@
         tools:layout="@layout/fragment_login" >
         <action
             android:id="@+id/action_nav_login_to_nav_home2"
+            app:destination="@id/nav_home" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_addItem"
+        android:name="no.ntnu.FantApp2.ui.item.AddItemFragment"
+        android:label="@string/addItem"
+        tools:layout="@layout/fragment_add_item" >
+        <action
+            android:id="@+id/action_nav_addItem_to_nav_home2"
             app:destination="@id/nav_home" />
     </fragment>
 </navigation>

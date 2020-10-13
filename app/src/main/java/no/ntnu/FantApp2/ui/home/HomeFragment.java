@@ -16,52 +16,170 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import org.json.JSONArray;
+
+import java.io.IOException;
 import java.util.ArrayList;
 
 import no.ntnu.FantApp2.ChatService;
 import no.ntnu.FantApp2.Item;
 import no.ntnu.FantApp2.R;
+import no.ntnu.FantApp2.RetrofitClientInstance;
 import no.ntnu.FantApp2.User;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeFragment extends Fragment implements RecyclerViewAdapter.ItemClickListener {
 
     RecyclerViewAdapter adapter;
     View root;
-    ArrayList<Item> itemList = null;
-    ChatService chatService;
+    ArrayList<Item> itemList = new ArrayList<>();
+    ArrayList<User> userList = new ArrayList<>();
+    RecyclerView recyclerView;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        System.out.println("STARTED NOW");
-        chatService = ChatService.getInstance();
-        if (chatService != null) {
-            //chatService.findAllUsers();
-            //chatService.findAllItems();
-        }
+        sendListUserRequest();
 
         root = inflater.inflate(R.layout.fragment_home, container, false);
-        System.out.println(chatService + " CHATSERVICE");
-        if (chatService != null) {
-            itemList = chatService.showAllItems();
 
-            // set up the RecyclerView
-            RecyclerView recyclerView = root.findViewById(R.id.rvItems);
 
-            LinearLayoutManager layoutManager = new LinearLayoutManager(root.getContext());
+        // set up the RecyclerView
+        recyclerView = root.findViewById(R.id.rvItems);
 
-            recyclerView.setLayoutManager(layoutManager);
-            DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
-                    layoutManager.getOrientation());
-            recyclerView.addItemDecoration(dividerItemDecoration);
-            adapter = new RecyclerViewAdapter(root.getContext(), itemList);
-            adapter.setClickListener(this);
-            recyclerView.setAdapter(adapter);
-        }
+        LinearLayoutManager layoutManager = new LinearLayoutManager(root.getContext());
+
+        recyclerView.setLayoutManager(layoutManager);
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
+                layoutManager.getOrientation());
+        recyclerView.addItemDecoration(dividerItemDecoration);
+
+        adapter = new RecyclerViewAdapter(root.getContext(), itemList);
+        adapter.setClickListener(this);
+        recyclerView.setAdapter(adapter);
+
         return root;
     }
 
     @Override
     public void onItemClick(View view, int position) {
         System.out.println("YES");
+    }
+
+
+    private void sendListUserRequest() {
+        Call<ResponseBody> call = RetrofitClientInstance.getSINGLETON().getAPI().listUsers();
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    try {
+                        parseUsers(response.body().string());
+                        adapter.notifyDataSetChanged();
+                        sendListItemsRequest();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void sendListItemsRequest() {
+        Call<ResponseBody> itemCall = RetrofitClientInstance.getSINGLETON().getAPI().listItems();
+        itemCall.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> itemCall, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    try {
+                        parseItems(response.body().string());
+                        adapter.notifyDataSetChanged();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
+
+    private void parseUsers(String jsonLine) {
+        JsonElement jsonElement = new JsonParser().parse(jsonLine);
+        JsonArray jsonArray = jsonElement.getAsJsonArray();
+
+        for (JsonElement element : jsonArray) {
+            JsonObject jsonObject = element.getAsJsonObject();
+
+            String firstName = jsonObject.get("firstName").getAsString();
+            String lastName = jsonObject.get("lastName").getAsString();
+            String email = jsonObject.get("email").getAsString();
+            String id = jsonObject.get("userid").getAsString();
+
+            boolean exists = false;
+            for (User u : userList) {
+                if (u.getUserid().equals(id)) {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists) {
+                User user = new User(id, firstName, lastName, email);
+                userList.add(user);
+            }
+        }
+    }
+
+
+    private void parseItems(String jsonLine) {
+        JsonElement jsonElement = new JsonParser().parse(jsonLine);
+        JsonArray jsonArray = jsonElement.getAsJsonArray();
+
+        for (JsonElement element : jsonArray) {
+            JsonObject object = element.getAsJsonObject();
+
+            boolean bought = object.get("bought").getAsBoolean();
+            long id = object.get("id").getAsLong();
+            int price = object.get("price").getAsInt();
+            String title = object.get("title").getAsString();
+            String description = object.get("description").getAsString();
+            String userId = object.get("user").getAsJsonObject().get("userid").getAsString();
+
+            User user = null;
+            for (User u : userList) {
+                if (userId.equals(u.getUserid())) {
+                    user = u;
+                }
+            }
+
+            boolean exists = false;
+            for (Item item : itemList) {
+                if (item.getId() == id) {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists) {
+                Item item = new Item(id, price, title, description, user, bought);
+                itemList.add(item);
+            }
+        }
     }
 }

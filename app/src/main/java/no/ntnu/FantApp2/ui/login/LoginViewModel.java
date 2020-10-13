@@ -31,9 +31,9 @@ public class LoginViewModel extends ViewModel {
         return loginResult;
     }
 
-    public void login(String username, String password, Context context) {
+    public void login(String username, String token) {
         // can be launched in a separate asynchronous job
-        Result<LoggedInUser> result = loginRepository.login(username, password, context);
+        Result<LoggedInUser> result = loginRepository.login(username, token);
         new CountDownTimer(500, 1000){
             @Override
             public void onTick(long l) {
@@ -42,7 +42,7 @@ public class LoginViewModel extends ViewModel {
             public void onFinish() {
                 if (result instanceof Result.Success) {
                     LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
-                    loginResult.setValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
+                    loginResult.setValue(new LoginResult(new LoggedInUserView(data.getUserId())));
                 } else {
                     loginResult.setValue(new LoginResult(R.string.login_failed));
                 }

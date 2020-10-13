@@ -1,15 +1,16 @@
 package no.ntnu.FantApp2.ui.login;
 
-import android.app.Activity;
-import android.content.Intent;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.ActionMenuView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -19,15 +20,23 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.Navigation;
 
-import no.ntnu.FantApp2.ChatService;
+import java.io.IOException;
+
 import no.ntnu.FantApp2.R;
-import no.ntnu.FantApp2.ui.home.HomeFragment;
-import no.ntnu.FantApp2.ui.home.HomeViewModel;
+import no.ntnu.FantApp2.RetrofitClientInstance;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginFragment extends Fragment {
 
@@ -43,7 +52,7 @@ public class LoginFragment extends Fragment {
         loginViewModel = ViewModelProviders.of(this, new LoginViewModelFactory())
                 .get(LoginViewModel.class);
 
-        final EditText usernameEditText = root.findViewById(R.id.username);
+        final EditText usernameEditText = root.findViewById(R.id.Login);
         final EditText passwordEditText = root.findViewById(R.id.password);
         final Button loginButton = root.findViewById(R.id.login);
         final ProgressBar loadingProgressBar = root.findViewById(R.id.loading);
@@ -75,9 +84,8 @@ public class LoginFragment extends Fragment {
                     showLoginFailed(loginResult.getError());
                 }
                 if (loginResult.getSuccess() != null) {
-                    ChatService.getInstance().findAllUsers();
-                    ChatService.getInstance().findAllItems();
                     updateUiWithUser(loginResult.getSuccess());
+
                     Navigation.findNavController(root).navigate(R.id.nav_home);
                 }
             }
@@ -107,8 +115,9 @@ public class LoginFragment extends Fragment {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    loginViewModel.login(usernameEditText.getText().toString(),
-                            passwordEditText.getText().toString(), root.getContext());
+                    //loginViewModel.login(usernameEditText.getText().toString(),
+                    //        passwordEditText.getText().toString(), root.getContext());
+                    getUserToken(usernameEditText.getText().toString(), passwordEditText.getText().toString());
                 }
                 return false;
             }
@@ -118,19 +127,56 @@ public class LoginFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 loadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString(), root.getContext());
+                //loginViewModel.login(usernameEditText.getText().toString(),
+                //      passwordEditText.getText().toString(), root.getContext());
+                getUserToken(usernameEditText.getText().toString(), passwordEditText.getText().toString());
             }
         });
         return root;
     }
 
+
+    @SuppressLint("RestrictedApi")
     private void updateUiWithUser(LoggedInUserView model) {
         String welcome = getString(R.string.welcome) + model.getDisplayName();
-
-        // TODO : initiate successful logged in experience
+        ActionMenuItemView view = getActivity().findViewById(R.id.Login);
+        view.setTitle(model.getDisplayName());
+        Toast.makeText(getActivity(), welcome, Toast.LENGTH_LONG).show();
     }
 
     private void showLoginFailed(@StringRes Integer errorString) {
+    }
+
+    private void getUserToken(String uid, String pwd) {
+        Call<ResponseBody> call = RetrofitClientInstance.getSINGLETON().getAPI().login(uid, pwd);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    try {
+                        String body = response.body().string();
+                        loginViewModel.login(uid, body);
+
+                        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+
+                        httpClient.addInterceptor(new Interceptor() {
+                            @Override
+                            public okhttp3.Response intercept(Chain chain) throws IOException {
+                                Request request = chain.request().newBuilder().addHeader("Authorization", "Bearer " + body).build();
+                                return chain.proceed(request);
+                            }
+                        });
+
+                        RetrofitClientInstance.addInterceptor(httpClient);
+                    } catch (IOException ioe) {
+                        System.out.println(ioe.getStackTrace());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            }
+        });
     }
 }

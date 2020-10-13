@@ -11,7 +11,12 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import no.ntnu.FantApp2.ChatService;
+import no.ntnu.FantApp2.RetrofitClientInstance;
 import no.ntnu.FantApp2.data.model.LoggedInUser;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 
 /**
@@ -20,14 +25,15 @@ import no.ntnu.FantApp2.data.model.LoggedInUser;
 public class LoginDataSource {
     LoggedInUser fakeUser;
     HttpURLConnection c;
-    String username;
-    String password;
+    String uid;
+    String pwd;
     Context context;
+    String body;
 
     public Result<LoggedInUser> login(String username, String password, Context context) {
         c = null;
-        this.username = username;
-        this.password = password;
+        this.uid = username;
+        this.pwd = password;
         this.context = context;
 
         try {
@@ -63,7 +69,7 @@ public class LoginDataSource {
         @Override
         protected Void doInBackground(String... strings) {
             try {
-                String token = getUserToken();
+                String token = getUserToken2();
                 ChatService.initialize(context, token);
                 if (token != null) {
                     setCurrentUser();
@@ -81,21 +87,20 @@ public class LoginDataSource {
             while (chatService == null) {
                 chatService = ChatService.getInstance();
             }
-                System.out.println("CHATSERVICE IN LOGGEDIN " + chatService);
             chatService.setLoggedInUser(fakeUser);
             while (fakeUser.getDisplayName() == null) {
             }
         }
 
-        private String getUserToken() throws IOException {
-            URL url = new URL("http://10.0.2.2:8080/Oblig1/api/auth/login?uid=" + username + "&pwd=" + password);
+        private String getUserToken2() throws IOException {
+            URL url = new URL("http://10.0.2.2:8080/Oblig1/api/auth/login?uid=" + uid + "&pwd=" + pwd);
             c = (HttpURLConnection) url.openConnection();
             c.setUseCaches(true);
             c.setRequestMethod("GET");
             if (c.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8));
                 String token = br.readLine();
-                fakeUser = new LoggedInUser(username, token);
+                fakeUser = new LoggedInUser(uid, token);
                 c.getInputStream().close(); // Why?
                 //return new Result.Success<>(fakeUser);
                 return token;

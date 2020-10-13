@@ -11,7 +11,7 @@ public class LoggedInUser {
 
     public LoggedInUser(String userId,  String token) {
         this.userId = userId;
-        this.token = token;
+        this.token = "Bearer " + token;
     }
 
     public String getUserId() {
