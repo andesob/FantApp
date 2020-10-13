@@ -6,6 +6,7 @@ import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Query;
 
 public interface FantAPI {
@@ -22,6 +23,10 @@ public interface FantAPI {
     Call<ResponseBody> addItem(@Field("title") String title,
                                @Field("description") String description,
                                @Field("price") String price);
+
+    @FormUrlEncoded
+    @PUT("fant/purchase")
+    Call<ResponseBody> purchase(@Field("itemid") String itemid);
 
     @GET("auth/login")
     Call<ResponseBody> login(@Query("uid") String uid, @Query("pwd") String password);

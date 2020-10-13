@@ -9,7 +9,10 @@ public class RetrofitClientInstance {
     //private static final String BASE_URL = "http://10.22.179.220:8080/Oblig1/api/";
 
     //local IP for emulator
-    private static final String BASE_URL = "http://10.0.2.2:8080/Oblig1/api/";
+    //private static final String BASE_URL = "http://10.0.2.2:8080/Oblig1/api/";
+
+    //IP at home
+    private static final String BASE_URL = "http://192.168.1.56:8080/Oblig1/api/";
 
     private static Retrofit retrofit;
     private static RetrofitClientInstance SINGLETON;

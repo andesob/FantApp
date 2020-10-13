@@ -50,4 +50,9 @@ public class Item {
     public boolean isBought() {
         return bought;
     }
+
+    public boolean setBought(){
+        bought = true;
+        return bought;
+    }
 }

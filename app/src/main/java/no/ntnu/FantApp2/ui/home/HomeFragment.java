@@ -1,11 +1,14 @@
 package no.ntnu.FantApp2.ui.home;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -70,7 +73,52 @@ public class HomeFragment extends Fragment implements RecyclerViewAdapter.ItemCl
 
     @Override
     public void onItemClick(View view, int position) {
-        System.out.println("YES");
+        System.out.println(adapter.getItem(position).getTitle());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        if (adapter.getItem(position).isBought()) {
+            builder.setCancelable(true);
+            builder.setTitle("Already bought");
+            builder.setMessage("This item has already been sold");
+            builder.setPositiveButton("Ok", new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                }
+            });
+        } else {
+            builder.setCancelable(true);
+            builder.setTitle("Confirmation");
+            builder.setMessage("Do you want to buy "
+                    + adapter.getItem(position).getTitle()
+                    + " for "
+                    + adapter.getItem(position).getPrice()
+                    + "?");
+            builder.setPositiveButton("Yes",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Call<ResponseBody> call = RetrofitClientInstance.getSINGLETON().getAPI().purchase(String.valueOf(adapter.getItem(position).getId()));
+                            call.enqueue(new Callback<ResponseBody>() {
+                                @Override
+                                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                                    Toast.makeText(getContext(), "You bought " + adapter.getItem(position).getTitle() + "!", Toast.LENGTH_LONG).show();
+                                    adapter.getItem(position).setBought();
+                                }
+
+                                @Override
+                                public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                                }
+                            });
+                        }
+                    });
+            builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            });
+        }
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
 
