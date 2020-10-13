@@ -113,6 +113,7 @@ public class ChatService implements Response.ErrorListener {
         JsonArrayRequest jar = new JsonArrayRequest(Request.Method.GET, url, null,
                 response -> {
                     allUsersJSONArray = response;
+
                 }, this) {
             @RequiresApi(api = Build.VERSION_CODES.R)
             @Override
@@ -122,7 +123,7 @@ public class ChatService implements Response.ErrorListener {
         };
         requestQueue.add(jar);
 
-        new CountDownTimer(500, 50) {
+        new CountDownTimer(500, 1) {
             @Override
             public void onTick(long l) {
                 if (allUsersJSONArray != null) {
@@ -154,9 +155,10 @@ public class ChatService implements Response.ErrorListener {
             }
         };
 
+
         requestQueue.add(jar);
 
-        new CountDownTimer(500, 50) {
+        new CountDownTimer(500, 1) {
             @Override
             public void onTick(long l) {
                 if (allItemsJSONArray != null) {
@@ -173,7 +175,6 @@ public class ChatService implements Response.ErrorListener {
     }
 
     public ArrayList<Item> showAllItems() {
-        System.out.println("ITEMLIST IN CHATSERVICE: " + itemList);
         return itemList;
     }
 
@@ -186,7 +187,6 @@ public class ChatService implements Response.ErrorListener {
                 long id = jsonItem.getLong("id");
                 int price = jsonItem.getInt("price");
                 String title = jsonItem.getString("title");
-                System.out.println("ITEM TITLE: " + title);
                 String description = jsonItem.getString("description");
                 String sellerid = jsonItem.getJSONObject("user").getString("userid");
                 User seller = null;

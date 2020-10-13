@@ -9,17 +9,32 @@
         android:id="@+id/nav_home"
         android:name="no.ntnu.FantApp2.ui.home.HomeFragment"
         android:label="@string/menu_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_nav_home_to_nav_login"
+            app:destination="@id/nav_login" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_register"
+            app:destination="@id/nav_register" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_register"
         android:name="no.ntnu.FantApp2.ui.register.RegisterFragment"
         android:label="@string/menu_register"
-        tools:layout="@layout/fragment_register" />
+        tools:layout="@layout/fragment_register" >
+        <action
+            android:id="@+id/action_nav_register_to_nav_home2"
+            app:destination="@id/nav_home" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_login"
         android:name="no.ntnu.FantApp2.ui.login.LoginFragment"
         android:label="@string/menu_login"
-        tools:layout="@layout/fragment_login" />
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_nav_login_to_nav_home2"
+            app:destination="@id/nav_home" />
+    </fragment>
 </navigation>

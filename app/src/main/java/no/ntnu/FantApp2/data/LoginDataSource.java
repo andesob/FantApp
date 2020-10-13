@@ -80,9 +80,8 @@ public class LoginDataSource {
             ChatService chatService = ChatService.getInstance();
             while (chatService == null) {
                 chatService = ChatService.getInstance();
-                chatService.findAllUsers();
-                chatService.findAllItems();
             }
+                System.out.println("CHATSERVICE IN LOGGEDIN " + chatService);
             chatService.setLoggedInUser(fakeUser);
             while (fakeUser.getDisplayName() == null) {
             }
