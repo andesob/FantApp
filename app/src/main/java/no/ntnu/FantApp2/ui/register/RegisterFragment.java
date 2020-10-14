@@ -64,7 +64,6 @@ public class RegisterFragment extends Fragment {
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                //System.out.println(response.body().string());
                 if (response.isSuccessful()) {
                     Toast.makeText(getContext(), "Added user with id: " + uid, Toast.LENGTH_LONG).show();
                     Navigation.findNavController(getView()).navigate(R.id.nav_home);
