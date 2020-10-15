@@ -103,6 +103,9 @@ public class HomeFragment extends Fragment implements RecyclerViewAdapter.ItemCl
                                         Toast.makeText(getContext(), "You bought " + adapter.getItem(position).getTitle() + "!", Toast.LENGTH_LONG).show();
                                         adapter.getItem(position).setBought();
                                     }
+                                    else{
+                                        System.out.println("Error code: " + response.code());
+                                    }
                                 }
 
                                 @Override
